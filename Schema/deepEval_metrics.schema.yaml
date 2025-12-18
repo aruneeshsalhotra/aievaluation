@@ -1,15 +1,9 @@
 # ===============================================================================================================================================
-# File: deepeval-metrics.schema.yaml
+# File: deepEval_metrics.schema.yaml
 # Description:
 #   Canonical schema defining evaluation metric categories, metric definitions,
 #   required test-case fields, constructor parameters, threshold semantics,
 #   and constraints for DeepEval-based AI/LLM evaluation pipelines.
-#
-#   This schema is intended to serve as a source-of-truth contract for:
-#     - AI evaluation engines
-#     - Metric configuration UIs
-#     - Automated validation of test cases
-#     - Governance, audit, and compliance documentation
 #
 # Author:
 #   Anmol Kumar
