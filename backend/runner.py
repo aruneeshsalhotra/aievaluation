@@ -7,6 +7,13 @@ import time
 from schema_registry import MetricDef
 from deepeval_resolver import resolve_metric_class
 from test_case_adapter import to_llm_test_case, to_conversational_test_case, to_arena_test_case
+from config import (
+    OLLAMA_BASE_URL, 
+    OLLAMA_MODEL, 
+    OLLAMA_API_KEY,
+    OLLAMA_COST_PER_INPUT_TOKEN,
+    OLLAMA_COST_PER_OUTPUT_TOKEN
+)
 
 def _apply_constraints(metric_def: MetricDef, test_case: Dict[str, Any]) -> List[str]:
     """
@@ -50,6 +57,30 @@ def _pass_fail(metric_def: MetricDef, score: float, threshold: float) -> bool:
         return score <= threshold
     return score >= threshold  # minimum_is_passing default
 
+def _configure_ollama_model(init_params: Dict[str, Any], metric_def: MetricDef) -> Dict[str, Any]:
+    """
+    Configure Ollama model for metrics that need a model but don't have one specified.
+    If 'model' is already in init_params, return as-is. Otherwise, inject Ollama config.
+    """
+    # If model is already specified, don't override
+    if "model" in init_params:
+        return init_params
+    
+    # Check if this metric type typically needs a model (has model in optional params)
+    if "model" in metric_def.optional_metric_init_params:
+        # Configure Ollama model
+        from deepeval.models import GPTModel
+        ollama_model = GPTModel(
+            model=OLLAMA_MODEL,
+            base_url=OLLAMA_BASE_URL,
+            api_key=OLLAMA_API_KEY,
+            cost_per_input_token=OLLAMA_COST_PER_INPUT_TOKEN,
+            cost_per_output_token=OLLAMA_COST_PER_OUTPUT_TOKEN
+        )
+        init_params["model"] = ollama_model
+    
+    return init_params
+
 def run_evaluation(
     metric_index: Dict[str, MetricDef],
     metrics: List[Dict[str, Any]],
@@ -91,6 +122,9 @@ def run_evaluation(
         threshold_override = msel.get("threshold", None)
         if threshold_override is not None:
             init_params.setdefault("threshold", threshold_override)
+
+        # Configure Ollama model if needed (before validation)
+        init_params = _configure_ollama_model(init_params, metric_def)
 
         init_errs = _validate_required_init_params(metric_def, init_params)
         if init_errs:
