@@ -62,3 +62,11 @@ class EvaluateResponse(BaseModel):
     overall_status: Literal["PASS", "WARNING", "FAIL"]
     metric_results: List[MetricResult]
     evidence_pointer: str
+
+class EvaluateFromConfigRequest(BaseModel):
+    evaluation_id: str
+    evaluation_name: str
+    goals: Optional[str] = None  # Comma-separated list of goal names
+    metrics: Optional[str] = None  # Comma-separated list of metric names
+    context: ContextModel
+    run: RunConfigModel
