@@ -68,14 +68,11 @@ def _configure_ollama_model(init_params: Dict[str, Any], metric_def: MetricDef) 
     
     # Check if this metric type typically needs a model (has model in optional params)
     if "model" in metric_def.optional_metric_init_params:
-        # Configure Ollama model
-        from deepeval.models import GPTModel
-        ollama_model = GPTModel(
+        # Configure Ollama model (use OllamaModel for local Ollama, not GPTModel)
+        from deepeval.models import OllamaModel
+        ollama_model = OllamaModel(
             model=OLLAMA_MODEL,
-            base_url=OLLAMA_BASE_URL,
-            api_key=OLLAMA_API_KEY,
-            cost_per_input_token=OLLAMA_COST_PER_INPUT_TOKEN,
-            cost_per_output_token=OLLAMA_COST_PER_OUTPUT_TOKEN
+            base_url=OLLAMA_BASE_URL.replace("/v1", ""),  # OllamaModel expects base URL without /v1
         )
         init_params["model"] = ollama_model
     
